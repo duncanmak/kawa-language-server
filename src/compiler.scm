@@ -3,5 +3,8 @@
 (module-name (kawa KawaWorkspaceCompiler))
 (module-implements WorkspaceCompiler)
 
+
 (define (compile files)
-  )
+  (display "compile")
+)
+

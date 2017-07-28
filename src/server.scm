@@ -1,23 +1,37 @@
 (import (class com.palantir.ls.util Uris)
-	(class org.eclipse.lsp4j InitializeParams)
-	(class org.eclipse.lsp4j.services LanguageClient LanguageClientAware LanguageServer))
+	(class java.nio.file Path Paths)
+	(class java.util.concurrent CompletableFuture)
+	(class org.eclipse.lsp4j InitializeParams InitializeResult)
+	(class org.eclipse.lsp4j.services
+	       LanguageClient LanguageClientAware LanguageServer TextDocumentService WorkspaceService))
 
-(module-name (kawa KawaLanguageServer))
-(module-implements LanguageServer LanguageClientAware)
-(module-compile-options main: #t)
+(define-simple-class KawaLanguageServer
+  (LanguageServer LanguageClientAware)
+  (*workspace-root*        type: Path)
+  (*workspace-service*     type: WorkspaceService)
+  (*text-document-service* type: TextDocumentService)
 
-(define (initialize params ::InitializeParams)
-  (display "initialize")
-  (display (Uris:getAbsolutePath (params:getRootPath))))
+  ((*init* text-document-service workspace-service window-Service)
+   (set! *text-document-service* text-document-service)
+   (set! *workspace-service* workspace-service)
+  )
 
-(define (shutdown)
-  (display "shutdown"))
+  ((initialize params ::InitializeParams)
+   (set! *workspace-root*
+	 (((Paths:get (params:getRootPath)):toAbsolutePath):normalize))
+   (let ((result (InitializeResult)))
+     (CompletableFuture:completedFuture result)))
 
-(define (exit)
-  (display "exit"))
+  ((shutdown)
+   (display "shutdown"))
 
-(define (connect client ::LanguageClient)
-  (display "connect"))
+  ((exit)
+   (display "exit"))
+
+  ((connect client ::LanguageClient)
+   (display "connect"))
+)
+
 
 (define (main args)
   (display "This is main"))
